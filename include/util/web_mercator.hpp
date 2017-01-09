@@ -41,10 +41,11 @@ inline FloatLatitude yToLat(const double y)
 inline double latToY(const FloatLatitude latitude)
 {
     // apparently this is the (faster) version of the canonical log(tan()) version
-    const double f = std::sin(detail::DEGREE_TO_RAD * static_cast<double>(latitude));
-    const double y = detail::RAD_TO_DEGREE * 0.5 * std::log((1 + f) / (1 - f));
-    const auto clamped_y = std::max(-180., std::min(180., y));
-    return clamped_y;
+    const double epsg3857_limit = 85.051128779806592378; // 90(4 atan(exp(pi)) / pi - 1)
+    const double clamped_latitude =
+        std::max(-epsg3857_limit, std::min(epsg3857_limit, static_cast<double>(latitude)));
+    const double f = std::sin(detail::DEGREE_TO_RAD * static_cast<double>(clamped_latitude));
+    return detail::RAD_TO_DEGREE * 0.5 * std::log((1 + f) / (1 - f));
 }
 
 template <typename T> constexpr double horner(double, T an) { return an; }
